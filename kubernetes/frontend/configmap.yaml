@@ -7,10 +7,10 @@ metadata:
 data:
   Caddyfile: |
     {
-        email jidanabdurahman@gmail.com
+        email americanie14@gmail.com
         acme_ca https://acme.zerossl.com/v2/DV90
     }
-    lazurune.shinshark.my.id {
+    lazurune.acidwealth.my.id {
         root * /srv
         encode gzip
 
@@ -45,7 +45,7 @@ data:
         # 4. Everything else -> Redirect Service
         handle {
             rewrite * /api{path}
-            reverse_proxy https://us-func-p6ndmuotrzo5a.azurewebsites.net {
+            reverse_proxy https://lyan-func-lujcgzdfxddfy.azurewebsites.net {
                 header_up Host {upstream_hostport}
             }
         }

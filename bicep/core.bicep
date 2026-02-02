@@ -5,6 +5,11 @@ param principalId string
 @secure()
 param sqlAdminPassword string
 
+@minValue(1)
+param aksNodeCount int = 1
+
+param aksVmSize string = 'Standard_B2s'
+
 // === Variables ===
 // uniqueString generates a 13-char hash based on the Resource Group ID
 var uniqueSuffix = uniqueString(resourceGroup().id)
@@ -53,8 +58,8 @@ resource aks 'Microsoft.ContainerService/managedClusters@2024-01-01' = {
     agentPoolProfiles: [
       {
         name: 'agentpool'
-        count: 2
-        vmSize: 'Standard_B2s' 
+        count: aksNodeCount
+        vmSize: aksVmSize
         mode: 'System'
         osType: 'Linux'
       }
@@ -210,3 +215,4 @@ output functionAppName string = functionApp.name
 output keyVaultName string = kv.name
 output aksClusterName string = aks.name
 output sqlServerName string = sqlServer.name
+output cosmosAccountName string = cosmosAccount.name

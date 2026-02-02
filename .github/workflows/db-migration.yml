@@ -6,11 +6,12 @@ on:
     branches: [ main ]
     paths:
       - 'services/auth-service/init.sql'
-      # Add other SQL files here as needed
+      - 'services/link-management-service/init.sql'
 
 env:
-  RESOURCE_GROUP: rg-us-prod
-  CLUSTER_NAME: us-aks-p6ndmuotrzo5a
+  RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+  CLUSTER_NAME: ${{ vars.AZURE_AKS_CLUSTER_NAME }}
+  SQL_HOST: ${{ vars.AZURE_SQL_HOST }}
 
 jobs:
   run-migration:
@@ -22,6 +23,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Validate deployment target
+        run: |
+          test -n "$RESOURCE_GROUP" || (echo "Missing vars.AZURE_RESOURCE_GROUP" && exit 1)
+          test -n "$CLUSTER_NAME" || (echo "Missing vars.AZURE_AKS_CLUSTER_NAME" && exit 1)
+          test -n "$SQL_HOST" || (echo "Missing vars.AZURE_SQL_HOST" && exit 1)
 
       - name: Azure Login
         uses: azure/login@v1
@@ -62,10 +69,10 @@ jobs:
                   args:
                     - |
                       # Run Auth Service Init
-                      /opt/mssql-tools/bin/sqlcmd -S us-sql-p6ndmuotrzo5a.database.windows.net -U sqladmin -P "\$DB_PASSWORD" -d links-db -i /scripts/auth-init.sql
+                      /opt/mssql-tools/bin/sqlcmd -S ${SQL_HOST} -U sqladmin -P "\$DB_PASSWORD" -d links-db -i /scripts/auth-init.sql
                       
                       # Run Link Service Init
-                      /opt/mssql-tools/bin/sqlcmd -S us-sql-p6ndmuotrzo5a.database.windows.net -U sqladmin -P "\$DB_PASSWORD" -d links-db -i /scripts/link-init.sql
+                      /opt/mssql-tools/bin/sqlcmd -S ${SQL_HOST} -U sqladmin -P "\$DB_PASSWORD" -d links-db -i /scripts/link-init.sql
                   env:
                   - name: DB_PASSWORD
                     valueFrom:
