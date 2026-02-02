@@ -6,6 +6,11 @@ metadata:
     app: analytics-processing-service
 spec:
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
   selector:
     matchLabels:
       app: analytics-processing-service
@@ -16,7 +21,7 @@ spec:
     spec:
       containers:
       - name: analytics-processing-service
-        image: ghcr.io/shinshark/azure-url-shortener/analytics-processing-service:latest
+        image: ghcr.io/ilyessin12/azure-url-shortener-optimized/analytics-processing-service:latest
         imagePullPolicy: Always
         env:
         - name: SERVICE_BUS_CONNECTION_STRING

@@ -6,6 +6,11 @@ metadata:
     app: link-management-service
 spec:
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
   selector:
     matchLabels:
       app: link-management-service
@@ -16,7 +21,7 @@ spec:
     spec:
       containers:
       - name: link-management-service
-        image: ghcr.io/shinshark/azure-url-shortener/link-management-service:latest
+        image: ghcr.io/ilyessin12/azure-url-shortener-optimized/link-management-service:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -24,7 +29,7 @@ spec:
         - name: PORT
           value: "8080"
         - name: DB_HOST
-          value: "us-sql-p6ndmuotrzo5a.database.windows.net"
+          value: "lyan-sql-lujcgzdfxddfy.database.windows.net"
         - name: DB_NAME
           value: "links-db"
         - name: DB_USER
@@ -40,7 +45,7 @@ spec:
               name: auth-secrets
               key: jwt-secret
         - name: CACHE_EVICTION_URL
-          value: "https://us-func-p6ndmuotrzo5a.azurewebsites.net/api/cache"
+          value: "https://lyan-func-lujcgzdfxddfy.azurewebsites.net/api/cache"
         resources:
           requests:
             cpu: "100m"
