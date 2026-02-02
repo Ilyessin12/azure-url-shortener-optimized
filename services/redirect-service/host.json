@@ -14,7 +14,7 @@
   },
   "customHandler": {
     "description": {
-      "defaultExecutablePath": "redirect-service",
+      "defaultExecutablePath": "./redirect-service",
       "workingDirectory": "",
       "arguments": []
     },
