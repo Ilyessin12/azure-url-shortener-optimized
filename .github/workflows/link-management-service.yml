@@ -12,8 +12,8 @@ env:
   REGISTRY: ghcr.io
   # Start image name with repository name, then service name
   IMAGE_NAME: ${{ github.repository }}/link-management-service
-  RESOURCE_GROUP: rg-us-prod
-  CLUSTER_NAME: us-aks-p6ndmuotrzo5a
+  RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+  CLUSTER_NAME: ${{ vars.AZURE_AKS_CLUSTER_NAME }}
 
 jobs:
   build-and-deploy:
@@ -27,6 +27,11 @@ jobs:
       # 1. Checkout Code
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Validate deployment target
+        run: |
+          test -n "$RESOURCE_GROUP" || (echo "Missing vars.AZURE_RESOURCE_GROUP" && exit 1)
+          test -n "$CLUSTER_NAME" || (echo "Missing vars.AZURE_AKS_CLUSTER_NAME" && exit 1)
 
       # 2. Log in to GitHub Container Registry
       - name: Log in to GHCR

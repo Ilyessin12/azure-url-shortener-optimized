@@ -1,18 +1,16 @@
 name: Redirect Service Pipeline
 
 on:
+  workflow_dispatch:
   push:
     branches: [ main ]
     paths:
       - 'services/redirect-service/**' # Only run when this specific service changes
 
 env:
-  # Replace with your actual Function App Name from the Bicep output
-  AZURE_FUNCTIONAPP_NAME: 'us-func-p6ndmuotrzo5a'
+  AZURE_FUNCTIONAPP_NAME: ${{ vars.AZURE_FUNCTIONAPP_NAME }}
   # The folder containing your Rust code
   SERVICE_PATH: 'services/redirect-service'
-  # Rust target for static binary
-  RUST_TARGET: 'x86_64-unknown-linux-musl'
 
 jobs:
   build-and-deploy:
@@ -25,35 +23,19 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # --- 1. Setup Rust Environment ---
-      - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: ${{ env.RUST_TARGET }}
-          override: true
-          profile: minimal
-
-      # --- 2. Install MUSL (Cross-compilation tools) ---
-      # On your laptop (Arch) you used pacman. On GitHub (Ubuntu) we use apt-get.
-      - name: Install MUSL tools
+      - name: Validate deployment target
         run: |
-          sudo apt-get update
-          sudo apt-get install -y musl-tools
+          test -n "$AZURE_FUNCTIONAPP_NAME" || (echo "Missing vars.AZURE_FUNCTIONAPP_NAME" && exit 1)
 
-      # --- 3. Build the Static Binary ---
-      # We replicate your 'make build' steps here manually to ensure paths are correct
-      - name: Build Rust Binary
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Rust binary (Linux)
         working-directory: ${{ env.SERVICE_PATH }}
         run: |
-          echo "--- Building for ${{ env.RUST_TARGET }} ---"
-          cargo build --release --target ${{ env.RUST_TARGET }}
-          
-          echo "--- Moving binary to root (Crucial for Custom Handler) ---"
-          cp target/${{ env.RUST_TARGET }}/release/redirect-service .
-          
-          echo "--- Cleaning up massive build artifacts ---"
-          # We delete the target folder so we don't upload 250MB of junk to Azure
+          cargo build --release
+          cp target/release/redirect-service ./redirect-service
+          chmod +x ./redirect-service
           rm -rf target/
 
       # --- 4. Log in to Azure ---
